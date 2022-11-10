@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+            <script  src="https://www.lactame.com/lib/image-js/0.21.2/image.min.js"></script>
+            <script src="jscolor.js"></script>
+
+        <title>Image Masking</title>
+</head>
+<body>
+    <img id="base" src="base.jpg" width="500px" />
+    <img id="mask" src="mask.jpg" width="500px"/>
+Color: <input id="color-input" value="#3399FF80" data-jscolor="{format:'hex'}">
+Opacity: <input id="opacity-input" value="30" ">
+
+    <img id="result"  width="500px"/>
+    <div id="body"></div>
+  <script >
+    const colorInput = document.getElementById("color-input");
+const opactiyInput = document.getElementById("opacity-input");
+async function process(color, alpha = 30) {
+  const image = await IJS.Image.load(document.getElementById("base").src);
+  let mask = (await IJS.Image.load(document.getElementById("mask").src))
+    .grey()
+    .mask();
+  const roiManager = image.getRoiManager();
+  roiManager.fromMask(mask);
+  var rois = roiManager.getRois({ negative: false, minSurface: 100 });
+  var roisMasks = rois.map((roi) => roi.getMask());
+
+  const result = image.rgba8().paintMasks(roisMasks, {
+    color,
+    alpha,
+  });
+  const resultImage = document.getElementById("result");
+  resultImage.src = result.toDataURL();
+}
+
+colorInput.addEventListener("change", (e) => {
+  process(e.target.value, opactiyInput.value);
+});
+
+opactiyInput.addEventListener("change", (e) => {
+  process(colorInput.value, e.target.value);
+});
+
+  </script>
+</body>
+</html>
