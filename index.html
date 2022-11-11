@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=<device-width>, initial-scale=1.0" />
     <script src="https://www.lactame.com/lib/image-js/0.21.2/image.min.js"></script>
     <script src="jscolor.js"></script>
+    <script src="https://pchen66.github.io/js/three/three.min.js"></script>
+    <script src="https://rawgit.com/pchen66/panolens.js/dev/build/panolens.min.js"></script>
 
     <title>Image Masking</title>
   </head>
@@ -14,6 +16,7 @@
     <img id="base-base" src="base.jpg" width="0px" />
     <img id="base" src="base-grey.jpg" width="0px" />
     <img id="mask" src="mask.jpg" width="0px" />
+
     <!-- Color: -->
     <!-- <input id="color-input" value="#3399FF80" data-jscolor="{format:'hex'}" /> -->
 
@@ -78,9 +81,12 @@
         resultImage.src = result.toDataURL();
       }
 
-      colorInput.addEventListener("change", (e) => {
-        process(e.target.value, 100);
-      });
+      //   colorInput.addEventListener("change", (e) => {
+      //     process(e.target.value, 100);
+      //   });
+      const panorama = new PANOLENS.ImagePanorama("1.jpg");
+      const viewer = new PANOLENS.Viewer();
+      viewer.add(panorama);
     </script>
   </body>
 </html>
