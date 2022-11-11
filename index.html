@@ -1,51 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
-            <script  src="https://www.lactame.com/lib/image-js/0.21.2/image.min.js"></script>
-            <script src="jscolor.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0" />
+    <script src="https://www.lactame.com/lib/image-js/0.21.2/image.min.js"></script>
+    <script src="jscolor.js"></script>
 
-        <title>Image Masking</title>
-</head>
-<body>
-    <img id="base" src="base.jpg" width="500px" />
-    <img id="mask" src="mask.jpg" width="500px"/>
-Color: <input id="color-input" value="#3399FF80" data-jscolor="{format:'hex'}">
-Opacity: <input id="opacity-input" value="30" ">
+    <title>Image Masking</title>
+  </head>
+  <body>
+    <div style="display: flex; overflow: scroll" id="insert-colors"></div>
+    <img id="base-base" src="base.jpg" width="0px" />
+    <img id="base" src="base-grey.jpg" width="0px" />
+    <img id="mask" src="mask.jpg" width="0px" />
+    <!-- Color: -->
+    <!-- <input id="color-input" value="#3399FF80" data-jscolor="{format:'hex'}" /> -->
 
-    <img id="result"  width="500px"/>
+    <img id="result" src="base.jpg" width="500px" />
     <div id="body"></div>
-  <script >
-    const colorInput = document.getElementById("color-input");
-const opactiyInput = document.getElementById("opacity-input");
-async function process(color, alpha = 30) {
-  const image = await IJS.Image.load(document.getElementById("base").src);
-  let mask = (await IJS.Image.load(document.getElementById("mask").src))
-    .grey()
-    .mask();
-  const roiManager = image.getRoiManager();
-  roiManager.fromMask(mask);
-  var rois = roiManager.getRois({ negative: false, minSurface: 100 });
-  var roisMasks = rois.map((roi) => roi.getMask());
+    <script>
+      const colors = [
+        "#fc9ca2",
+        "#f35ce9",
+        "#8d5cfe",
+        "#5cc3fe",
+        "#5cfe7a",
+        "#f5f72f",
+      ];
+      const colorInput = document.getElementById("color-input");
+      const opactiyInput = document.getElementById("opacity-input");
+      const rgba2hex = (rgba) =>
+        `#${rgba
+          .match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/)
+          .slice(1)
+          .map((n, i) =>
+            (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n))
+              .toString(16)
+              .padStart(2, "0")
+              .replace("NaN", "")
+          )
+          .join("")}`;
 
-  const result = image.rgba8().paintMasks(roisMasks, {
-    color,
-    alpha,
-  });
-  const resultImage = document.getElementById("result");
-  resultImage.src = result.toDataURL();
-}
+      function insertDiv(color) {
+        var div = document.createElement("div");
+        div.style.width = "100px";
+        div.style.height = "100px";
+        div.style.background = color;
+        div.style.color = color;
+        div.innerHTML = "Hello";
+        div.style.margin = "25px";
+        div.style.cursor = "pointer";
+        div.style.boxShadow =
+          "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)";
+        div.addEventListener("click", (e) => {
+          process(rgba2hex(e.target.style.background), 100);
+        });
+        document.getElementById("insert-colors").appendChild(div);
+      }
 
-colorInput.addEventListener("change", (e) => {
-  process(e.target.value, opactiyInput.value);
-});
+      colors.map((color) => insertDiv(color));
+      async function process(color, alpha = 100) {
+        const image = await IJS.Image.load(document.getElementById("base").src);
+        let mask = (await IJS.Image.load(document.getElementById("mask").src))
+          .grey()
+          .mask();
+        const roiManager = image.getRoiManager();
+        roiManager.fromMask(mask);
+        var rois = roiManager.getRois({ negative: false, minSurface: 100 });
+        var roisMasks = rois.map((roi) => roi.getMask());
 
-opactiyInput.addEventListener("change", (e) => {
-  process(colorInput.value, e.target.value);
-});
+        const result = image.rgba8().paintMasks(roisMasks, {
+          color,
+          alpha,
+        });
+        const resultImage = document.getElementById("result");
+        resultImage.src = result.toDataURL();
+      }
 
-  </script>
-</body>
+      colorInput.addEventListener("change", (e) => {
+        process(e.target.value, 100);
+      });
+    </script>
+  </body>
 </html>
